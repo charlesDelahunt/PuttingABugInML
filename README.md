@@ -1,7 +1,7 @@
 
 23 April 2018
 
-Putting a bug in machine learning
+This repository contains the code used in the paper "Putting a bug in ML: The moth olfactory network learns to read MNIST" (CB Delahunt and JN Kutz, January 2018).
 
 This codebase simulates a moth olfactory network as it learns to read MNIST digits. It generates a model of the Manduca sexta moth olfactory network, then runs a time-stepped evolution of SDEs to train the network to read downsampled MNIST digits. The moth's architecture is able to learn very rapidly (1 to 10 digits per class).
 Notes:
@@ -18,7 +18,7 @@ Notes:
  
 6. We had earlier found that the moth brain substantially out-performed ML methods. However, this was due to a bug (...) in the pre-processing code that unfairly penalized ML methods. So the ML methods come closer to the moth performance than we previously thought, and match moth performance at 20 training samples per class. The ML methods given here can likely be optimized.
 
-7. The code her supports the paper 'Putting a bug in ML: The moth olfactory network learns to read MNIST' (Delahunt, Kutz). It is a variant, for MNIST experiments, of code at github/charlesDelahunt/smartAsABug, which supports the paper 'Biological Mechanisms for Learning:A Computational Model of Olfactory Learning in the Manduca sexta Moth, with Applications to Neural Nets' (Delahunt, Riffell, Kutz) The mechanics of the moth architecture and the SDE evolution are largely the same.
+7. The code here is a variant, for MNIST experiments, of code at github/charlesDelahunt/smartAsABug, which supports the paper "Biological Mechanisms for Learning:A Computational Model of Olfactory Learning in the Manduca sexta Moth, with Applications to Neural Nets" (CB Delahunt, JA Riffell, JN Kutz, January 2018). The mechanics of the moth architecture and the SDE evolution are largely the same.
 
 Many thanks for your interest in these clever moths :) 
 We hope you enjoy them, and we welcome any questions, comments, (constructive) criticisms, bug reports, improvements, extensions, etc. 
