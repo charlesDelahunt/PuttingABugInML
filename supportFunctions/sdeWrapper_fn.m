@@ -108,18 +108,19 @@ Y = thisRun.Y;
 
 % save some inputs and outputs to a struct for argout:
 simResults.T = thisRun.T;  % timing information
-simResults.E =  Y(:, end - nE + 1: end );
+simResults.E =  thisRun.E;  
 simResults.octoHits = octoHits;
 simResults.K2Efinal = thisRun.K2Efinal;
-% not saved to avoid memory issues:
-%   simResults.P = Y(:,1:nP); 
-%   simResults.K = Y(:, nP + nPI + nG + nR + 1: nP + nPI + nG + nR + nK);
-%   simResults.P2Kheb = thisRun.P2Kheb;
-%   simResults.K2Eheb = thisRun.K2Eheb;
-% not saved due to lack of relevance:
-%   PI = Y(:,nP + 1:nP + nPI);   
-%   L = Y(:, nP + nPI + 1:nP + nPI + nG);
-%   R =  Y(:, nP + nPI + nG + 1: nP + nPI + nG + nR);
+simResults.P2Kfinal = thisRun.P2Kfinal;
+
+if modelParams.saveAllNeuralTimecourses
+    simResults.P = Y(:,1:nP); 
+    simResults.K = Y(:, nP + nPI + nG + nR + 1: nP + nPI + nG + nR + nK);
+end
+%  % other neural timecourses:
+%   simResults.PI = Y(:,nP + 1:nP + nPI);   
+%   simResults.L = Y(:, nP + nPI + 1:nP + nPI + nG);
+%   simResults.R =  Y(:, nP + nPI + nG + 1: nP + nPI + nG + nR);
 
 
 % MIT license:

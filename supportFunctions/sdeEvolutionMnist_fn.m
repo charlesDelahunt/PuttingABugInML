@@ -232,15 +232,21 @@ maxSpontP2KtimesPval = 10; % placeholder until we have an estimate based on spon
 % iterate through time steps to get the full evolution:
 for i = 1:N-1        % i = index of the time point
     
-    % update to console:
     step = time(2) - time(1);
-    % if i - round(50/step)  == 0, disp([ num2str(round(i*step)) ' sec (= ' num2str(i) ' timesteps)']), end
     
-    oldR = R(:,i);
-    oldP = P(:,i);
-    oldPI = PI(:,i);   % no PIs for mnist
-    oldL = L(:,i);
-    oldK = K(:,i);
+    if T(i) < stopSpontMean3 + 5 || params.saveAllNeuralTimecourses
+        oldR = R(:,i);
+        oldP = P(:,i);
+        oldPI = PI(:,i);   % no PIs for mnist
+        oldL = L(:,i);
+        oldK = K(:,i);
+    else    % version to save memory:
+        oldR = R(:,end);
+        oldP = P(:,end);
+        oldPI = PI(:,end);
+        oldL = L(:,end);
+        oldK = K(:,end);
+    end
     oldE = E(:,i);
     oldT = T(i);
     
@@ -295,6 +301,7 @@ for i = 1:N-1        % i = index of the time point
         ignoreTopN = 1;  % ie ignore this many of the highest vals
         temp = temp(1:end - ignoreTopN);   % ignore the top few outlier K inputs.
         maxSpontP2KtimesPval = max(temp); % The minimum global damping on the MB.
+        meanCalc3Done = 1;
     end
     
     % update classCounter:
@@ -382,6 +389,7 @@ for i = 1:N-1        % i = index of the time point
     
     %------------------------------------------------
     
+    % Enforce sparsity on the KCs:
     % Global damping on KCs is controlled by sparsityTarget (during
     % octopamine, by octSparsityTarget). Assume that inputs to KCs form a
     % gaussian, and use a threshold calculated via std devs to enforce the correct sparsity.
@@ -392,9 +400,8 @@ for i = 1:N-1        % i = index of the time point
     numOctoStds = sqrt(2)*erfinv(1 - 2*octoSparsityTarget);
     numStds = (1-thisOctoHit)*numNoOctoStds + thisOctoHit*numOctoStds;  % selects for either octo or no-octo
     minDamperVal = 1.2*maxSpontP2KtimesPval;    % a minimum damping based on spontaneous PN activity, so that the MB is silent absent odor
-    thisKinput = oldP2K*oldP;       %   - oldPI2K*oldPI;   (no PIs for mnist, only Ps)
-    dampRate(i) = mean(thisKinput) + numStds*std(thisKinput);
-    damper =  dampRate(end) ;
+    thisKinput = oldP2K*oldP - oldPI2K*oldPI;  % (no PIs for mnist, only Ps)
+    damper = unique( mean(thisKinput) + numStds*std(thisKinput) ); 
     damper = max(damper, minDamperVal);
     
     Kinputs = oldP2K*oldP.*(1 + octo2K*thisOctoHit) ...   ; % but note that octo2K == 0
@@ -502,26 +509,41 @@ for i = 1:N-1        % i = index of the time point
     end
     %-------------------------------------------------------------
     
-    % update the evolution matrices, disallowing negative FRs:
-    R(:,i+1) = max( 0, newR);
-    P(:,i+1) = max( 0, newP);
-    PI(:,i+1) = max( 0, newPI);   % no PIs for mnist
-    L(:,i+1) = max( 0, newL);
-    K(:,i+1) = max( 0, newK);
-    E(:,i+1) = newE;
+    % update the evolution matrices, disallowing negative FRs. 
+    if T(i) < stopSpontMean3 + 5 || params.saveAllNeuralTimecourses
+        R(:,i+1) = max( 0, newR);
+        P(:,i+1) = max( 0, newP);
+        PI(:,i+1) = max( 0, newPI);   % no PIs for mnist
+        L(:,i+1) = max( 0, newL);
+        K(:,i+1) = max( 0, newK);
+        E(:,i+1) = newE;    
+    % case: do not save AL and MB neural timecourses after the noise calibration is done, to save on memory
+    else
+        R = max( 0, newR);
+        P = max( 0, newP);
+        PI = max( 0, newPI);   % no PIs for mnist
+        L  = max( 0, newL);
+        K  = max( 0, newK);
+    end 
+    
+    E(:,i+1) = newE;  % always save full EN timecourses
     
 end % for i = 1:N
 % Time-step simulation is now over.
 
 % combine so that each row of fn output Y is a col of [P; PI; L; R; K]:
-Y = vertcat(P, PI, L, R, K, E);
-Y = Y';
-
-% convert to singles to save memory:
+if params.saveAllNeuralTimecourses
+    Y = vertcat(P, PI, L, R, K, E);
+    Y = Y';
+    thisRun.Y = single(Y);  % convert to singles to save memory
+else
+    thisRun.Y = [];
+end
+ 
 thisRun.T = single(T');  % store T as a col
-thisRun.Y = single(Y);
-thisRun.P2Kfinal = oldP2K;
-thisRun.K2Efinal = oldK2E;
+thisRun.E = single(E');  % length(T) x nE matrix
+thisRun.P2Kfinal = single(oldP2K);
+thisRun.K2Efinal = single(oldK2E);
 end
 
 

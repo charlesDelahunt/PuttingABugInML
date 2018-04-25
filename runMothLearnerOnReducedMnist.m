@@ -46,13 +46,14 @@ trPerClass =  3; % the number of training samples per class
 numSniffs = 2;      % number of exposures each training sample 
 
 % Flags to show various images:
-showAverageImages = 1;  % to show thumbnails in 'examineClassAveragesAndCorrelations_fn'   
+showAverageImages = 0;  % to show thumbnails in 'examineClassAveragesAndCorrelations_fn'   
 showThumbnailsUsed =  10;   %  N means show N experiment inputs from each class. 0 means don't show any. 
 showENPlots = [1, 1];  % 1 to plot, 0 to ignore
 % arg1 above refers to statistical plots of EN response changes. One image (with 8 subplots) per EN. 
 % arg2 above refers to EN timecourses. Three scaled ENs timecourses on each of 4 images (only one EN on the 4th image).
 
 % To save results if wished:
+saveAllNeuralTimecourses = 0; % 0 -> save only EN (ie readout) timecourses.  Caution: 1 -> very high memory demands, hinders longer runs. 
 resultsFilename = 'results';  % will get the run number appended to it.
 saveResultsDataFolder = [ ]; % String. If non-empty, 'resultsFilename' will be saved here.
 saveResultsImageFolder = []; % String. If non-empty, images will be saved here (if showENPlots also non-zero).
@@ -189,6 +190,7 @@ for run = 1:numRuns
     end 
 	
     modelParams.trueClassLabels = classLabels;     % misc parameter tagging along
+    modelParams.saveAllNeuralTimecourses = saveAllNeuralTimecourses;
 
 	% Define the experiment parameters, including book-keeping for time-stepped evolutions, eg
     %       when octopamine occurs, time regions to poll for digit responses, windowing of Firing rates, etc

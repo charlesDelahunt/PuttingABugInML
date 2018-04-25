@@ -18,10 +18,10 @@ Notes:
  
 6. We had earlier found that the moth brain substantially out-performed ML methods. However, this was due to a bug (...) in the pre-processing code that unfairly penalized ML methods. So the ML methods come closer to the moth performance than we previously thought, and match moth performance at 20 training samples per class. The ML methods given here can likely be optimized.
 
-7. The code here is a variant, for MNIST experiments, of code at github/charlesDelahunt/smartAsABug, which supports the paper "Biological Mechanisms for Learning:A Computational Model of Olfactory Learning in the Manduca sexta Moth, with Applications to Neural Nets" (CB Delahunt, JA Riffell, JN Kutz, January 2018). The mechanics of the moth architecture and the SDE evolution are largely the same.
+7. The code here is a variant, for MNIST experiments, of code at github/charlesDelahunt/smartAsABug, which supports the paper "Biological Mechanisms for Learning: A Computational Model of Olfactory Learning in the Manduca sexta Moth, with Applications to Neural Nets" (CB Delahunt, JA Riffell, JN Kutz, January 2018). The mechanics of the moth architecture and the SDE evolution are largely the same.
 
 Many thanks for your interest in these clever moths :) 
-We hope you enjoy them, and we welcome any questions, comments, (constructive) criticisms, bug reports, improvements, extensions, etc. 
+We hope you enjoy them, and we welcome any questions, comments, (constructive) criticisms, bug reports, improvements, extensions, etc.
 
 Charles Delahunt, delahunt@uw.edu
 
