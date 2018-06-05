@@ -14,11 +14,9 @@ Notes:
 
 4. 'runOtherAlgorithms' contains scripts to run Nearest-neighbor, SVM, and neural net on the downsampled MNIST. Key experiment parameters are: trPerClass, numNeighbors, boxConstraint (matlab script); trainPerClass (python script).
 
-5. We find that the moth brain out-performs the ML methods given in the few-samples regime (less than 20 training samples per class). Conversely, the moth brain seems to max out at around 85% accuracy. We don't know if this is due to the learning rates we chose, or if it's an intrinsic limitation of the moth architecture at moth size (moths can learn about 8 new odors). For example, honeybee olfactory networks are larger, though with the same basic layout. They demonstrate much richer learning behavior.
- 
-6. We had earlier found that the moth brain substantially out-performed ML methods. However, this was due to a bug (...) in the pre-processing code that unfairly penalized ML methods. So the ML methods come closer to the moth performance than we previously thought, and match moth performance at 20 training samples per class. The ML methods given here can likely be optimized.
+5. We find that the moth brain out-performs the ML methods given in the few-samples regime (less than 20 training samples per class). Conversely, the moth brain seems to max out at around 80% mean accuracy. We don't know if this is due to the learning rates we chose, or if it's an intrinsic limitation of the moth architecture at moth size (moths can learn about 8 new odors). For example, honeybee olfactory networks are larger, though with the same basic layout. They demonstrate much richer learning behavior.
 
-7. The code here is a variant, for MNIST experiments, of code at github/charlesDelahunt/smartAsABug, which supports the paper "Biological Mechanisms for Learning: A Computational Model of Olfactory Learning in the Manduca sexta Moth, with Applications to Neural Nets" (CB Delahunt, JA Riffell, JN Kutz, January 2018). The mechanics of the moth architecture and the SDE evolution are largely the same.
+6. The code here is a variant, for MNIST experiments, of code to be posted at github/charlesDelahunt/smartAsABug, which supports the paper "Biological Mechanisms for Learning: A Computational Model of Olfactory Learning in the Manduca sexta Moth, with Applications to Neural Nets" (CB Delahunt, JA Riffell, JN Kutz, January 2018). The mechanics of the moth architecture and the SDE evolution are largely the same.
 
 Many thanks for your interest in these clever moths :) 
 We hope you enjoy them, and we welcome any questions, comments, (constructive) criticisms, bug reports, improvements, extensions, etc.
