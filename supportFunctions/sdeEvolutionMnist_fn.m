@@ -76,44 +76,44 @@ hebDurations = expParams.hebDurations;
 
 hebTauPK = params.hebTauPK;
 hebMaxPK = params.hebMaxPK;  % max connection weights
-hebTauPIK = params.hebTauPIK;    % no PIs for mnist
-hebMaxPIK = params.hebMaxPIK;   % no PIs for mnist
+hebTauPIK = params.hebTauPIK; % no PIs for mnist
+hebMaxPIK = params.hebMaxPIK; % no PIs for mnist
 hebTauKE = params.hebTauKE;
 hebMaxKE = params.hebMaxKE;
 
 dieBackTauKE = params.dieBackTauKE ;
 dieBackTauPK = params.dieBackTauPK  ;
-dieBackTauPIK = params.dieBackTauPIK  ;   % no PIs for mnist
+dieBackTauPIK = params.dieBackTauPIK  ; % no PIs for mnist
 
 sparsityTarget =  params.sparsityTarget;
 octoSparsityTarget = params.octoSparsityTarget;
 
 % unpack connection matrices from params:
-F2R = params.F2R;     % note S (stimuli) for odor case is replaced by F (features) for MNIST version
+F2R = params.F2R; % note S (stimuli) for odor case is replaced by F (features) for MNIST version
 R2P = params.R2P;
-R2PI = params.R2PI;   % no PIs for mnist
+R2PI = params.R2PI; % no PIs for mnist
 R2L = params.R2L;
 octo2R = params.octo2R;
 octo2P = params.octo2P;
-octo2PI = params.octo2PI;   % no PIs for mnist
+octo2PI = params.octo2PI; % no PIs for mnist
 octo2L = params.octo2L;
 octo2E = params.octo2E;
 octoNegDiscount = params.octoNegDiscount;
 L2P = params.L2P;
 L2L = params.L2L;
-L2PI = params.L2PI;   % no PIs for mnist
+L2PI = params.L2PI; % no PIs for mnist
 L2R = params.L2R;
-G2PI = params.G2PI;   % no PIs for mnist
+G2PI = params.G2PI; % no PIs for mnist
 K2E = params.K2E;
 
 P2K = params.P2K;
-PI2K = params.PI2K;   % no PIs for mnist
+PI2K = params.PI2K; % no PIs for mnist
 octo2K = params.octo2K;
 
 % decay constants:
 tauR = params.tauR;
 tauP = params.tauP;
-tauPI = params.tauPI;   % no PIs for mnist
+tauPI = params.tauPI; % no PIs for mnist
 tauL = params.tauL;
 tauK = params.tauK;
 tauE = params.tauE;
@@ -122,14 +122,14 @@ tauE = params.tauE;
 cR = params.cR;
 cP = params.cP;
 cL = params.cL;
-cPI = params.cPI;   % no PIs for mnist
+cPI = params.cPI; % no PIs for mnist
 cK = params.cK;
 
 % numbers of objects
 nC = size(classMagMatrix,1);
 nF = params.nF;
 nG = params.nG;
-nPI = params.nPI;   % no PIs for mnist
+nPI = params.nPI; % no PIs for mnist
 nK = params.nK;
 nE = params.nE;
 nP = nG;
@@ -139,23 +139,23 @@ nR = nG;
 % noise in individual neuron FRs. These are vectors, one vector for each type:
 wRsig = params.noiseRvec;
 wPsig = params.noisePvec;
-wPIsig = params.noisePIvec;   % no PIs for mnist
+wPIsig = params.noisePIvec; % no PIs for mnist
 wLsig = params.noiseLvec;
 wKsig = params.noiseKvec;
 wEsig = params.noiseEvec;
 
-kGlobalDampVec = params.kGlobalDampVec;    % uniform 1's currently, ie LH inhibition hits all KCs equally
+kGlobalDampVec = params.kGlobalDampVec; % uniform 1's currently, ie LH inhibition hits all KCs equally
 
 % steady-state RN FR, base + noise:
 Rspont = params.Rspont;
-RspontRatios = Rspont/mean(Rspont);   % used to scale stim inputs
+RspontRatios = Rspont/mean(Rspont); % used to scale stim inputs
 
 % param for sigmoid that squashes inputs to neurons:
 slopeParam = params.slopeParam;  % slope of sigmoid at 0 = slopeParam*c/4, where c = cR, cP, cL, etc
 % the slope at x = 0 = slopeParam*span/4;
 kSlope = slopeParam*cK/4;
 pSlope = slopeParam*cP/4;
-piSlope = slopeParam*cPI/4;   % no PIs for mnist
+piSlope = slopeParam*cPI/4; % no PIs for mnist
 rSlope = slopeParam*cR/4;
 lSlope = slopeParam*cL/4;
 
@@ -178,27 +178,27 @@ T(1:N) = tspan(1):dt:tspan(2)-dt;  % the time vector
 %---------------------------------------------------------
 
 P = zeros(nP,N);
-PI = zeros(nPI,N);   % no PIs for mnist
+PI = zeros(nPI,N); % no PIs for mnist
 L = zeros(nL,N);
 R = zeros(nR, N);
 K = zeros(nK, N);
 E = zeros(nE, N);
 
 % initialize the FR matrices with initial conditions:
-P(:,1) = initCond( 1 : nP);             % col vector
+P(:,1) = initCond( 1 : nP); % col vector
 PI(:,1) = initCond( nP + 1 : nP + nPI);  % no PIs for mnist
 L(:,1) = initCond( nP + nPI + 1 : nP + nPI + nL ); 
 R(:,1) = initCond(nP + nPI + nL + 1: nP + nPI + nL + nR); 
 K(:,1) = initCond(nP + nPI + nL + nR + 1: nP + nPI + nL + nR + nK); 
 E(:,1) = initCond(end - nE + 1 : end); 
-P2Kheb{1} = P2K;         % '-heb' suffix is used to show that it will vary with time
-PI2Kheb{1} = PI2K;   % no PIs for mnist
+P2Kheb{1} = P2K; % '-heb' suffix is used to show that it will vary with time
+PI2Kheb{1} = PI2K; % no PIs for mnist
 K2Eheb{1} = K2E;
 P2Kmask = P2K > 0;
-PI2Kmask = PI2K > 0;   % no PIs for mnist
+PI2Kmask = PI2K > 0; % no PIs for mnist
 K2Emask = K2E > 0;
-newP2K = P2K;       % initialize
-newPI2K = PI2K;   % no PIs for mnist
+newP2K = P2K; % initialize
+newPI2K = PI2K; % no PIs for mnist
 newK2E = K2E;
 
 % initialize the counters for the various classes:
@@ -220,7 +220,7 @@ meanCalc2Done = false;
 meanCalc3Done = false;
 meanSpontR = 0*ones(size(R(:,1)));
 meanSpontP = 0*ones(size(P(:,1)));
-meanSpontPI = 0*ones(size(PI(:,1)));   % no PIs for mnist
+meanSpontPI = 0*ones(size(PI(:,1))); % no PIs for mnist
 meanSpontL = 0*ones(size(L(:,1)));
 meanSpontK = 0*ones(size(K(:,1)));
 meanSpontE = 0*ones(size(E(:,1)));
@@ -230,17 +230,17 @@ ssStdSpontP = ones(size(P(:,1)));
 maxSpontP2KtimesPval = 10; % placeholder until we have an estimate based on spontaneous PN firing rates
 % The main evolution loop:
 % iterate through time steps to get the full evolution:
-for i = 1:N-1        % i = index of the time point
+for i = 1:N-1 % i = index of the time point
     
     step = time(2) - time(1);
     
     if T(i) < stopSpontMean3 + 5 || params.saveAllNeuralTimecourses
         oldR = R(:,i);
         oldP = P(:,i);
-        oldPI = PI(:,i);   % no PIs for mnist
+        oldPI = PI(:,i); % no PIs for mnist
         oldL = L(:,i);
         oldK = K(:,i);
-    else    % version to save memory:
+    else % version to save memory:
         oldR = R(:,end);
         oldP = P(:,end);
         oldPI = PI(:,end);
@@ -250,8 +250,8 @@ for i = 1:N-1        % i = index of the time point
     oldE = E(:,i);
     oldT = T(i);
     
-    oldP2K = newP2K;        % these are inherited from the previous iteration
-    oldPI2K = newPI2K;   % no PIs for mnist
+    oldP2K = newP2K; % these are inherited from the previous iteration
+    oldPI2K = newPI2K; % no PIs for mnist
     oldK2E = newK2E;
     %--------------------------------------------------------
     
@@ -284,22 +284,23 @@ for i = 1:N-1        % i = index of the time point
         meanSpontL = mean(L(:,inds),2);
         meanSpontK = mean(K(:,inds), 2);
         meanSpontE = mean(E(:,inds), 2);
-        stdSpontP = std(P(:,inds),0, 2);   % for checking progress
+        stdSpontP = std(P(:,inds),0, 2); % for checking progress
         meanCalc2Done = 1;
     end
-    if adjustNoiseFlag3 && ~meanCalc3Done  % we want to calc stdSpontP for use with LH channel and maybe for use in heb:
+    if adjustNoiseFlag3 && ~meanCalc3Done % we want to calc stdSpontP for use with LH channel and maybe for use in heb:
         % maybe we should also use this for noise calcs (eg dWP). But the difference is slight.
         inds = find(T > startSpontMean3 & T < stopSpontMean3);
-        ssMeanSpontP = mean(P(:,inds),2);   % 'ss' means steady state
+        ssMeanSpontP = mean(P(:,inds),2); % 'ss' means steady state
         ssStdSpontP = std(P(:,inds),0, 2);
-        ssMeanSpontPI = mean(PI(:,inds),2);   % no PIs for mnist
-        ssStdSpontPI = std(PI(:,inds),0, 2);   % no PIs for mnist
+        ssMeanSpontPI = mean(PI(:,inds),2); % no PIs for mnist
+        ssStdSpontPI = std(PI(:,inds),0, 2); % no PIs for mnist
         meanCalc3Done = 1;
-        % set a minimum damping on KCs based on spontaneous PN activity, sufficient to silence the MB silent absent odor:
+        % set a minimum damping on KCs based on spontaneous PN activity, 
+        % sufficient to silence the MB silent absent odor:
         temp = P2K*ssMeanSpontP;
         temp = sort(temp,'ascend');
         ignoreTopN = 1;  % ie ignore this many of the highest vals
-        temp = temp(1:end - ignoreTopN);   % ignore the top few outlier K inputs.
+        temp = temp(1:end - ignoreTopN); % ignore the top few outlier K inputs.
         maxSpontP2KtimesPval = max(temp); % The minimum global damping on the MB.
         meanCalc3Done = 1;
     end
@@ -320,7 +321,8 @@ for i = 1:N-1        % i = index of the time point
     thisStimClassInd = [];
     for j = 1:nC
         if classMagMatrix(j,i) > 0
-            thisInput = thisInput + classMagMatrix(j,i)*featureArray(:, classCounter(j), j) ;
+            classMags = classMagMatrix(j,i) * featureArray(:,classCounter(j),j);
+            thisInput = thisInput + classMags;
             thisStimClassInd = [ thisStimClassInd, j ];
         end
     end
@@ -328,18 +330,20 @@ for i = 1:N-1        % i = index of the time point
     %---------------------------------------------------------------
     
     % get value at t for octopamine:
-    thisOctoHit = octoHits(i); % octoHits is a vector with an octopamine magnitude for each time point.
+    thisOctoHit = octoHits(i); 
+    % octoHits is a vector with an octopamine magnitude for each time point.
     
     %-----------------------
     % dR:
     % inputs: S = stim,  L = lateral neurons, Rspont = spontaneous FR
     % NOTE: octo does not affect Rspont. It affects R's response to input odors.
-    Rinputs = -L2R*oldL.*max( 0, (ones(nG,1) - thisOctoHit*octo2R*octoNegDiscount ) )   + ...
-        (F2R*thisInput).*RspontRatios.*( ones(nG,1) + thisOctoHit*octo2R ) + Rspont;
+    octoMax = -L2R*oldL.*max(0,(ones(nG,1) - thisOctoHit*octo2R*octoNegDiscount));
+    neur_act = (F2R*thisInput).*RspontRatios.*(ones(nG,1) + thisOctoHit*octo2R);
+    Rinputs = octoMax + neur_act + Rspont;
     
-    Rinputs = piecewiseLinearPseudoSigmoid_fn (Rinputs, cR, rSlope);
+    Rinputs = piecewiseLinearPseudoSigmoid_fn(Rinputs, cR, rSlope);
     
-    dR = dt*( -oldR*tauR + Rinputs );
+    dR = dt*(-oldR*tauR + Rinputs);
     
     %-----------------------------------------
     
@@ -350,10 +354,12 @@ for i = 1:N-1        % i = index of the time point
     
     %--------------------------------------------------------
     % dP:
-    Pinputs = -L2P*oldL.*max( 0, (1 - thisOctoHit*octo2P*octoNegDiscount) ) + (R2P.*oldR).*(1 + thisOctoHit*octo2P);
+    Pold = -L2P*oldL.*max(0, (1 - thisOctoHit*octo2P*octoNegDiscount));
+    Rold = (R2P.*oldR).*(1 + thisOctoHit*octo2P);
+    Pinputs = Pold + Rold;
     % ie octo increases responsivity to positive inputs and to spont firing, and
     % decreases (to a lesser degree) responsivity to neg inputs.
-    Pinputs = piecewiseLinearPseudoSigmoid_fn (Pinputs, cP, pSlope);
+    Pinputs = piecewiseLinearPseudoSigmoid_fn(Pinputs, cP, pSlope);
     
     dP = dt*( -oldP*tauP + Pinputs );
     % Wiener noise:
@@ -362,10 +368,11 @@ for i = 1:N-1        % i = index of the time point
     newP = oldP + dP + dWP;
     
     %-----------------------------------------
-    % dPI:                                 % no PIs for mnist
-    PIinputs = -L2PI*oldL.*max( 0, (1 - thisOctoHit*octo2PI*octoNegDiscount) ) + (R2PI*oldR).*(1 + thisOctoHit*octo2PI);
-    
-    PIinputs = piecewiseLinearPseudoSigmoid_fn (PIinputs, cPI, piSlope);
+    % dPI:  % no PIs for mnist
+    PIinputs = max(0, (1 - thisOctoHit*octo2PI*octoNegDiscount));
+    PIinputs = -L2PI*oldL.*PIinputs;
+    PIinputs = PIinputs + (R2PI*oldR).*(1 + thisOctoHit*octo2PI);
+    PIinputs = piecewiseLinearPseudoSigmoid_fn(PIinputs, cPI, piSlope);
     
     dPI = dt*( -oldPI*tauPI + PIinputs );
     % Wiener noise:
@@ -375,11 +382,12 @@ for i = 1:N-1        % i = index of the time point
     
     %-----------------
     % dL:
-    Linputs = -L2L*oldL.*max( 0, (1 - thisOctoHit*octo2L*octoNegDiscount ) )...
-        + (R2L.*oldR).*(1 + thisOctoHit*octo2L );
+    Linputs = max(0, (1 - thisOctoHit*octo2L*octoNegDiscount));
+    Linputs = -L2L*oldL.*Linputs;
+    Linputs = Linputs + (R2L.*oldR).*(1 + thisOctoHit*octo2L );
     
     
-    Linputs = piecewiseLinearPseudoSigmoid_fn (Linputs, cL, lSlope);
+    Linputs = piecewiseLinearPseudoSigmoid_fn(Linputs, cL, lSlope);
     
     dL = dt*( -oldL*tauL + Linputs );
     % Wiener noise:
@@ -396,18 +404,23 @@ for i = 1:N-1        % i = index of the time point
     
     % Delays from AL -> MB and AL -> LH -> MB (~30 mSec) are ignored.
     
-    numNoOctoStds = sqrt(2)*erfinv(1 - 2*sparsityTarget); % the # st devs to give the correct sparsity
+    % the # st devs to give the correct sparsity
+    numNoOctoStds = sqrt(2)*erfinv(1 - 2*sparsityTarget);
     numOctoStds = sqrt(2)*erfinv(1 - 2*octoSparsityTarget);
-    numStds = (1-thisOctoHit)*numNoOctoStds + thisOctoHit*numOctoStds;  % selects for either octo or no-octo
-    minDamperVal = 1.2*maxSpontP2KtimesPval;    % a minimum damping based on spontaneous PN activity, so that the MB is silent absent odor
-    thisKinput = oldP2K*oldP - oldPI2K*oldPI;  % (no PIs for mnist, only Ps)
-    damper = unique( mean(thisKinput) + numStds*std(thisKinput) ); 
+    % select either octo or no-octo
+    numStds = (1-thisOctoHit)*numNoOctoStds + thisOctoHit*numOctoStds; 
+    % a minimum damping based on spontaneous PN activity, so that the MB is silent absent odor
+    minDamperVal = 1.2*maxSpontP2KtimesPval;
+    thisKinput = oldP2K*oldP - oldPI2K*oldPI; % (no PIs for mnist, only Ps)
+    damper = unique(mean(thisKinput) + numStds*std(thisKinput)); 
     damper = max(damper, minDamperVal);
     
-    Kinputs = oldP2K*oldP.*(1 + octo2K*thisOctoHit) ...   ; % but note that octo2K == 0
-      - ( damper*kGlobalDampVec + oldPI2K*oldPI ).*max( 0, (1 - octo2K*thisOctoHit) );   % but no PIs for mnist
+    Kinputs = oldP2K*oldP.*(1 + octo2K*thisOctoHit); % but note that octo2K == 0
+    dampening = damper*kGlobalDampVec + oldPI2K*oldPI;
+    pos_octo = max(0, (1 - octo2K*thisOctoHit));
+    Kinputs = Kinputs - dampening.*pos_octo; % but no PIs for mnist
     
-    Kinputs = piecewiseLinearPseudoSigmoid_fn (Kinputs, cK, kSlope);
+    Kinputs = piecewiseLinearPseudoSigmoid_fn(Kinputs, cK, kSlope);
     
     dK = dt*( -oldK*tauK + Kinputs );
     % Wiener noise:
@@ -422,13 +435,15 @@ for i = 1:N-1        % i = index of the time point
     % octo2E == 0, since we are not stimulating ENs with octo.
     % dWE == 0 since we assume no noise in ENs.
     
-    Einputs = oldK2E*oldK;    %  (oldK2E*oldK).*(1 + thisOctoHit*octo2E);  % octo2E == 0
+    Einputs = oldK2E*oldK;    
+    % (oldK2E*oldK).*(1 + thisOctoHit*octo2E); % octo2E == 0
     
     dE = dt*( -oldE*tauE + Einputs );
     % Wiener noise:
-    dWE = 0; %  sqrt(dt)*wEsig.*meanSpontE.*randn(size(dE));   % noise = 0 => dWE == 0
+    dWE = 0; %  sqrt(dt)*wEsig.*meanSpontE.*randn(size(dE));   
+    % noise = 0 => dWE == 0
     % combine them:
-    newE = oldE + dE + dWE;   % always non-neg
+    newE = oldE + dE + dWE; % always non-neg
     
     %--------------------------------------------------------------------
     
@@ -438,16 +453,16 @@ for i = 1:N-1        % i = index of the time point
     % For ease, use 'newK' and 'oldP', 'newE' and 'oldK', ie 1 timestep of delay.
     % We restrict hebbian growth in K2E to connections into the EN of the training stimulus
     
-    if hebRegion(i)   % Hebbian updates are active for about half the duration of each stimulus
+    if hebRegion(i) % Hebbian updates are active for about half the duration of each stimulus
         
         % the PN contribution to hebbian is based on raw FR:
         tempP = oldP;
-        tempPI = oldPI;     % no PIs for mnist
+        tempPI = oldPI; % no PIs for mnist
         nonNegNewK = max(0,newK);  % since newK has not yet been made non-neg
         
         %% dP2K:
         dp2k = (1/hebTauPK) *nonNegNewK * (tempP') ;
-        dp2k = dp2k.*P2Kmask;   % if original synapse does not exist, it will never grow.
+        dp2k = dp2k.*P2Kmask; % if original synapse does not exist, it will never grow.
         
         % decay some P2K connections if wished: (not used for mnist experiments)
         if dieBackTauPK > 0
@@ -459,11 +474,11 @@ for i = 1:N-1        % i = index of the time point
         newP2K = min(newP2K, hebMaxPK*ones(size(newP2K)));
         
         %------------------------------------------------------------------------------------------------
-        % dPI2K:                     % no PIs for mnist
-        dpi2k = (1/hebTauPIK) *nonNegNewK *(tempPI') ;
-        dpi2k = dpi2k.*PI2Kmask;   % if original synapse does not exist, it will never grow.
+        % dPI2K: % no PIs for mnist
+        dpi2k = (1/hebTauPIK)*nonNegNewK*(tempPI');
+        dpi2k = dpi2k.*PI2Kmask; % if original synapse does not exist, it will never grow.
         % kill small increases:
-        temp = oldPI2K;           % this detour prevents dividing by zero
+        temp = oldPI2K; % this detour prevents dividing by zero
         temp(temp == 0) = 1;
         keepMask = dpi2k./temp;
         keepMask = reshape(keepMask, size(dpi2k));
@@ -478,7 +493,7 @@ for i = 1:N-1        % i = index of the time point
         
         %% dK2E:
         tempK = oldK;
-        dk2e = (1/hebTauKE) * newE* (tempK') ;   % oldK is already nonNeg
+        dk2e = (1/hebTauKE) * newE* (tempK') ; % oldK is already nonNeg
         dk2e = dk2e.*K2Emask;
         
         % restrict changes to just the i'th row of K2E, where i = ind of training stim
@@ -495,16 +510,17 @@ for i = 1:N-1        % i = index of the time point
             targetMask( dk2e(:) == 0 ) = 1;
             targetMask = reshape(targetMask, size(dk2e));
             targetMask = targetMask.*restrictK2Emask;
-            oldK2E = oldK2E - targetMask.*(oldK2E + 2)*(1/dieBackTauKE)*dt; % the '+1' allows weights to die to absolute 0
+            dieBack = (oldK2E + 2)*(1/dieBackTauKE)*dt;
+            oldK2E = oldK2E - targetMask.*dieBack; % the '+1' allows weights to die to absolute 0
         end
         
         newK2E = oldK2E + dk2e;
         newK2E = max(0,newK2E);
         newK2E = min(newK2E, hebMaxKE*ones(size(newK2E)));
         
-    else                       % case: no heb or no octo
+    else % case: no heb or no octo
         newP2K = oldP2K;
-        newPI2K = oldPI2K;   % no PIs for mnist
+        newPI2K = oldPI2K; % no PIs for mnist
         newK2E = oldK2E;
     end
     %-------------------------------------------------------------
@@ -513,7 +529,7 @@ for i = 1:N-1        % i = index of the time point
     if T(i) < stopSpontMean3 + 5 || params.saveAllNeuralTimecourses
         R(:,i+1) = max( 0, newR);
         P(:,i+1) = max( 0, newP);
-        PI(:,i+1) = max( 0, newPI);   % no PIs for mnist
+        PI(:,i+1) = max( 0, newPI); % no PIs for mnist
         L(:,i+1) = max( 0, newL);
         K(:,i+1) = max( 0, newK);
         E(:,i+1) = newE;    
@@ -521,7 +537,7 @@ for i = 1:N-1        % i = index of the time point
     else
         R = max( 0, newR);
         P = max( 0, newP);
-        PI = max( 0, newPI);   % no PIs for mnist
+        PI = max( 0, newPI); % no PIs for mnist
         L  = max( 0, newL);
         K  = max( 0, newK);
     end 
