@@ -17,12 +17,12 @@ function [ thisRun ] = sdeEvolutionMnist_fn(tspan, initCond, time, classMagMatri
 % Output:
 %   thisRun: struct with fields Y (vectors of all neural timecourses as rows); T = t; 
 %                 and final P2K and K2E connection matrices.
-
+%
 % Copyright (c) 2018 Charles B. Delahunt.  delahunt@uw.edu
 % MIT License
-
-%-------------------------------------------------
-
+%
+%--------------------------------------------------------------------------
+%
 % comment: for mnist, the book-keeping differs from the odor experiment set-up.
 %           Let nC = number of classes (1 - 10 for mnist).
 %           The class may change with each new digit, so there is
@@ -64,7 +64,7 @@ function [ thisRun ] = sdeEvolutionMnist_fn(tspan, initCond, time, classMagMatri
 %   This has the following effects on simResults:
 %       1. In the heat maps and time-courses this will give a period of uniform FRs.
 %       2. The meanSpontFRs and stdSpontFRs are not 'settled' until after the stopSpontMean3 timepoint.
-%---------------------------------------
+%--------------------------------------------------------------------------
 
 % if argin seedValue > 0, fix the rand seed for reproducible results:
 if seedValue > 0
@@ -169,13 +169,21 @@ stopSpontMean2 = expParams.stopSpontMean2;
 startSpontMean3 = expParams.startSpontMean3;
 stopSpontMean3 = expParams.stopSpontMean3;
 
-%------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 dt = time(2) - time(1); % this is determined by start, stop and step in calling function
 N = floor( (tspan(2) - tspan(1)) / dt ); % number of steps in noise evolution
 T(1:N) = tspan(1):dt:tspan(2)-dt;  % the time vector
 
-%---------------------------------------------------------
+function [ new_ ] = wiener(w_sig, meanSpont_, old_, tau_, inputs_)
+    d_ = dt*(-old_*tau_ + inputs_);
+    % Wiener noise:
+    dW_ = sqrt(dt)*w_sig.*meanSpont_.*randn(size(d_));
+    % combine them:
+    new_ = old_ + d_ + dW_;
+end
+
+%--------------------------------------------------------------------------
 
 P = zeros(nP,N);
 PI = zeros(nPI,N); % no PIs for mnist
@@ -213,7 +221,7 @@ end
 % % DEBUG STEP:
 % figure, plot(T, hebRegion), title('hebRegion vs T');
 
-%----------------------------------------------------------
+%--------------------------------------------------------------------------
 
 meanCalc1Done = false;  % flag to prevent redundant calcs of mean spont FRs
 meanCalc2Done = false;
@@ -253,7 +261,8 @@ for i = 1:N-1 % i = index of the time point
     oldP2K = newP2K; % these are inherited from the previous iteration
     oldPI2K = newPI2K; % no PIs for mnist
     oldK2E = newK2E;
-    %--------------------------------------------------------
+    
+    %----------------------------------------------------------------------
     
     % set flags to say:
     %   1. whether we are past the window where meanSpontFR is
@@ -327,75 +336,63 @@ for i = 1:N-1 % i = index of the time point
         end
     end
     
-    %---------------------------------------------------------------
+    %----------------------------------------------------------------------
     
     % get value at t for octopamine:
     thisOctoHit = octoHits(i); 
     % octoHits is a vector with an octopamine magnitude for each time point.
     
-    %-----------------------
+    %----------------------------------------------------------------------
+    
     % dR:
     % inputs: S = stim,  L = lateral neurons, Rspont = spontaneous FR
     % NOTE: octo does not affect Rspont. It affects R's response to input odors.
-    octoMax = -L2R*oldL.*max(0,(ones(nG,1) - thisOctoHit*octo2R*octoNegDiscount));
-    neur_act = (F2R*thisInput).*RspontRatios.*(ones(nG,1) + thisOctoHit*octo2R);
-    Rinputs = octoMax + neur_act + Rspont;
-    
+    Rinputs = max(0, (1 - thisOctoHit*octo2R*octoNegDiscount));
+    Rinputs = -L2R*oldL.*Rinputs;
+    neur_act = (F2R*thisInput).*RspontRatios;
+    neur_act = neur_act.*(1 + thisOctoHit*octo2R);
+    Rinputs = Rinputs + neur_act + Rspont;
     Rinputs = piecewiseLinearPseudoSigmoid_fn(Rinputs, cR, rSlope);
     
-    dR = dt*(-oldR*tauR + Rinputs);
+    % Wiener noise
+    newR = wiener(wRsig, meanSpontR, oldR, tauR, Rinputs);
     
-    %-----------------------------------------
+    %----------------------------------------------------------------------
     
-    % Wiener noise:
-    dWR = sqrt(dt)*wRsig.*meanSpontR.*randn(size(dR));
-    % combine them:
-    newR = oldR + dR + dWR;
-    
-    %--------------------------------------------------------
     % dP:
-    Pold = -L2P*oldL.*max(0, (1 - thisOctoHit*octo2P*octoNegDiscount));
-    Rold = (R2P.*oldR).*(1 + thisOctoHit*octo2P);
-    Pinputs = Pold + Rold;
+    Pinputs = max(0, (1 - thisOctoHit*octo2P*octoNegDiscount));
+    Pinputs = -L2P*oldL.*Pinputs;
+    Pinputs = Pinputs + (R2P.*oldR).*(1 + thisOctoHit*octo2P);
     % ie octo increases responsivity to positive inputs and to spont firing, and
     % decreases (to a lesser degree) responsivity to neg inputs.
     Pinputs = piecewiseLinearPseudoSigmoid_fn(Pinputs, cP, pSlope);
     
-    dP = dt*( -oldP*tauP + Pinputs );
-    % Wiener noise:
-    dWP = sqrt(dt)*wPsig.*meanSpontP.*randn(size(dP));
-    % combine them:
-    newP = oldP + dP + dWP;
+    % Wiener noise
+    newP = wiener(wPsig, meanSpontP, oldP, tauP, Pinputs);
     
-    %-----------------------------------------
+    %----------------------------------------------------------------------
+    
     % dPI:  % no PIs for mnist
     PIinputs = max(0, (1 - thisOctoHit*octo2PI*octoNegDiscount));
     PIinputs = -L2PI*oldL.*PIinputs;
     PIinputs = PIinputs + (R2PI*oldR).*(1 + thisOctoHit*octo2PI);
     PIinputs = piecewiseLinearPseudoSigmoid_fn(PIinputs, cPI, piSlope);
     
-    dPI = dt*( -oldPI*tauPI + PIinputs );
-    % Wiener noise:
-    dWPI = sqrt(dt)*wPIsig.*meanSpontPI.*randn(size(dPI));
-    % combine them:
-    newPI = oldPI + dPI + dWPI;
+    % Wiener noise
+    newPI = wiener(wPIsig, meanSpontPI, oldPI, tauPI, PIinputs);
     
-    %-----------------
+    %----------------------------------------------------------------------
+
     % dL:
     Linputs = max(0, (1 - thisOctoHit*octo2L*octoNegDiscount));
     Linputs = -L2L*oldL.*Linputs;
     Linputs = Linputs + (R2L.*oldR).*(1 + thisOctoHit*octo2L );
-    
-    
     Linputs = piecewiseLinearPseudoSigmoid_fn(Linputs, cL, lSlope);
     
-    dL = dt*( -oldL*tauL + Linputs );
-    % Wiener noise:
-    dWL = sqrt(dt)*wLsig.*meanSpontL.*randn(size(dL));
-    % combine them:
-    newL = oldL + dL + dWL;
+    % Wiener noise
+    newL = wiener(wLsig, meanSpontL, oldL, tauL, Linputs);
     
-    %------------------------------------------------
+    %----------------------------------------------------------------------
     
     % Enforce sparsity on the KCs:
     % Global damping on KCs is controlled by sparsityTarget (during
@@ -419,16 +416,12 @@ for i = 1:N-1 % i = index of the time point
     dampening = damper*kGlobalDampVec + oldPI2K*oldPI;
     pos_octo = max(0, (1 - octo2K*thisOctoHit));
     Kinputs = Kinputs - dampening.*pos_octo; % but no PIs for mnist
-    
     Kinputs = piecewiseLinearPseudoSigmoid_fn(Kinputs, cK, kSlope);
     
-    dK = dt*( -oldK*tauK + Kinputs );
-    % Wiener noise:
-    dWK = sqrt(dt)*wKsig.*meanSpontK.*randn(size(dK));
-    % combine them:
-    newK = oldK + dK + dWK;
-    
-    %----------------------------------------------------------------
+    % Wiener noise
+    newK = wiener(wKsig, meanSpontK, oldK, tauK, Kinputs);
+
+    %----------------------------------------------------------------------
     
     % readout neurons E (EN = 'extrinsic neurons'):
     % These are readouts, so there is no sigmoid.
@@ -437,15 +430,15 @@ for i = 1:N-1 % i = index of the time point
     
     Einputs = oldK2E*oldK;    
     % (oldK2E*oldK).*(1 + thisOctoHit*octo2E); % octo2E == 0
-    
     dE = dt*( -oldE*tauE + Einputs );
+    
     % Wiener noise:
     dWE = 0; %  sqrt(dt)*wEsig.*meanSpontE.*randn(size(dE));   
     % noise = 0 => dWE == 0
     % combine them:
     newE = oldE + dE + dWE; % always non-neg
     
-    %--------------------------------------------------------------------
+    %----------------------------------------------------------------------
     
     %% HEBBIAN UPDATES:
     
@@ -473,7 +466,8 @@ for i = 1:N-1 % i = index of the time point
         newP2K = max(0, newP2K);
         newP2K = min(newP2K, hebMaxPK*ones(size(newP2K)));
         
-        %------------------------------------------------------------------------------------------------
+        %------------------------------------------------------------------
+        
         % dPI2K: % no PIs for mnist
         dpi2k = (1/hebTauPIK)*nonNegNewK*(tempPI');
         dpi2k = dpi2k.*PI2Kmask; % if original synapse does not exist, it will never grow.
@@ -489,7 +483,8 @@ for i = 1:N-1 % i = index of the time point
         newPI2K = oldPI2K + dpi2k;
         newPI2K = max(0, newPI2K);
         newPI2K = min(newPI2K, hebMaxPIK*ones(size(newPI2K)));
-        %---------------------------------------------------------------------------------------------------
+        
+        %------------------------------------------------------------------
         
         %% dK2E:
         tempK = oldK;
@@ -501,7 +496,7 @@ for i = 1:N-1 % i = index of the time point
         restrictK2Emask(thisStimClassInd,:) = 1;
         dk2e = dk2e.*restrictK2Emask;
         
-        %---------------------------------------------------------
+        %------------------------------------------------------------------
         
         % inactive connections for this EN die back:
         if dieBackTauKE > 0
@@ -523,7 +518,8 @@ for i = 1:N-1 % i = index of the time point
         newPI2K = oldPI2K; % no PIs for mnist
         newK2E = oldK2E;
     end
-    %-------------------------------------------------------------
+    
+    %----------------------------------------------------------------------
     
     % update the evolution matrices, disallowing negative FRs. 
     if T(i) < stopSpontMean3 + 5 || params.saveAllNeuralTimecourses
