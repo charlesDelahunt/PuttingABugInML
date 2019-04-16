@@ -1,4 +1,5 @@
-% Main wrapper to run insect cyborg experiments. as described in the paper 
+% Main wrapper to run insect cyborg experiments. as described in the paper, using Omniglot as a dataset
+
 % 'Insect cyborgs: Biological feature generators improve machine accuracy on limited data'
 % To use this wrapper:
 % 1. Set User Entries in the three scripts listed below (the first script controls number of runs and numTrain).
@@ -11,11 +12,12 @@
 
 clear
 
-% ATTENTION! By default this does a shortened set of runs:  numRuns = 5, trPerClassList = [ 3 7 20 ].
-% For reproduce full data from the paper, in the first script set variables: numRuns = 13, trPerClass = [ 1 2 3 5 7 10 15 20 30 40 50 70 100 ].  
+% ATTENTION! By default this does a shortened set of runs:  numRuns = 5, trPerClassList = [ 3, 7 ]. 
+% For reproduce full data from the paper, in the first script set variables: numRuns = 13, trPerClass = [ 1 2 3 5 7 10 15 20 30 40 50 70 100 ].
 
-runMothLearnerOnReducedMnistForUseInCyborg    
-runCyborgLearnersOnReducedMnist
+runMothLearnerOnOmniglotForUseInCyborg
+       % ( calls 'generateDownsampledOmniglotSet_normalizeByMaxVal_fn.m' )
+runCyborgLearnersOnOmniglot
 plotCyborgResults
 
 

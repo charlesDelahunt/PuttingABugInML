@@ -42,13 +42,16 @@
 clear  
 
 %% USER ENTRIES:
-     
-numRuns = 5; %  13;   % how many runs you wish to do with this moth template (or maybe single moth).
-                                    % each run using random draws from the
-                                    % mnist set. Since training set (and val set) sizes are small, there is variation between runs.
-                                    % More runs improves statistics about training effects.
-trPerClassList =  [ 3 7 20 ];% [ 1 2 3 5 7 10 15 20 30 40 50 70 100 ]      % to sweep over different sizes of training set
-trivialAL_flagList = 0; %   [ 0, 1 ]    % '0' means normal (ie non-trivial) AL, '1' means pass-through (ie trivial) AL
+
+% To save results. The trained moths, as well as the exact training and val data, must be saved to use them as feature generators later:
+saveResultsDataFolder = 'mothsForMnistCyborg'; % must match the folder in 'runCyborgLearnersOnReducedMnist.m'
+
+% Next two variables determine how long the experiment takes:
+numRuns = 5; % 13;   % how many runs you wish to do with this moth template.
+                                    % each run using random draws from the mnist set. Since training set (and val set) sizes are small, 
+                                    % there is variation between runs. More runs improves statistics about training effects.
+trPerClassList = [ 3 7 20 ]; %[ 1 2 3 5 7 10 15 20 30 40 50 70 100 ] ;     % to sweep over different sizes of training set
+trivialAL_flagList = 0;  % can be a vector [0, 1]. '0' means normal (ie non-trivial) AL, '1' means pass-through (ie trivial) AL
 
 goal =  20; % defines the moth's learning rates, in terms of how many training samples per class give max accuracy. So "goal = 1" gives a very fast learner.
                 % if goal == 0, the rate parameters defined the template will be used as-is. if goal > 1, the rate parameters will be updated, even in a pre-set moth.
@@ -96,7 +99,6 @@ for trivialAL_flag = trivialAL_flagList
         % To save results if wished:
         resultsFilename = ['mothsForCyborg_goal', num2str(goal), '_tr', num2str(trPerClass), '_sniffs', num2str(numSniffs), ...
             '_trivialAL', num2str(trivialAL_flag)  ];  % will get the run number appended to it.
-        saveResultsDataFolder = [ 'mothsForCyborg' ]; 
         % String. If non-empty, 'resultsFilename' will be saved here.
         saveResultsImageFolder = []; % String. If non-empty, images will be saved here (if showENPlots also non-zero).
 
@@ -303,7 +305,7 @@ for trivialAL_flag = trivialAL_flagList
 
         %    Post-training accuracy using log-likelihood over all ENs:
             outputTrainedLogL = classifyDigitsViaLogLikelihood_fn ( r );  
-            disp([ 'Trained Accuracy: ' num2str(round(outputTrainedLogL.totalAccuracy)),  ' %.   '  ,  resultsFilename, '_run', num2str(run) , '_' num2str(counter) ])
+            disp([ 'Moth trained accuracy: ' num2str(round(outputTrainedLogL.totalAccuracy)),  ' %.   '  ,  resultsFilename, '_run', num2str(run) , '_' num2str(counter) ])
         %          '%, by class: ' num2str(round(outputTrainedLogL.accuracyPercentages)),    ' %.   '  resultsFilename, '_run', num2str(run) ])
 
             % 2 Using single EN thresholding:

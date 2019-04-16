@@ -32,7 +32,7 @@ nR = modelParams.nR; % = nG
 nE = modelParams.nE;
 F2R = modelParams.F2R;
 
-%%  2b. Define Stimuli and Octopamine time courses:
+%%  2. Define Stimuli and Octopamine time courses:
 
 % set time span and events:
 simStart = expParams.simStart;
@@ -81,10 +81,10 @@ for i = 1:length(octoStart)
 end
 octoHits = conv(octoHits,lpWindow,'same');  % the low pass filter
 
-%% do SDE time-step evolution:
+%% 3. do SDE time-step evolution:
 
 % Use euler-maruyama SDE method, milstein's version.
-%  Y (the vector of all neural firing rates) is structured as a row vector as follows: [ P, PI, L, K, E ]
+%  Y (the vector of all neural firing rates) is structured as a column vector as follows: [ P, PI, L, K, E ]
 
 Po = 1*ones(nP, 1); % P are the normalized FRs of the excitatory PNs
 PIo = 1*ones(nPI, 1); % PI are the normed FRs of the inhib PNs
@@ -102,7 +102,7 @@ thisRun= sdeEvolutionMnist_fn(tspan, initCond, time,...
     classMagMatrix, featureArray, octoHits, modelParams, expParams, seedValue ); 
 % Time stepping is now done.
 
-%% Unpack Y and save results :
+%% 4. Unpack Y and save results :
 % Y is a matrix numTimePoints x nG. Each col is a PN, each row holds values for a single timestep
 Y = thisRun.Y;
 

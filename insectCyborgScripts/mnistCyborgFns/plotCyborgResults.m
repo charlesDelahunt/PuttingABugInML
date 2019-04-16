@@ -1,8 +1,9 @@
 % plotCyborgResults.m:
 % plots the accuracy results of cyborgs (and pure moths, and pure ML methods) run and saved by 'runCyborgLearnersOnReducedMnist.m'
-
+% Basically the same as 'plotCyborgResults.m'
+%
 % Dependencies: Matlab, Statistics and machine learning toolbox, Signal processing toolbox
-% Copyright (c) 2018 Charles B. Delahunt
+% Copyright (c) 2019 Charles B. Delahunt
 % MIT License
 
 clear
@@ -11,9 +12,9 @@ clear
 %% USER ENTRIES:
 
 normalAL = true; % Choose whether to plot normal or pass-through AL cyborgs 
-useOnlyEnsInCyborgs = false;  % if true, the ML-cyborg uses just the moth ENs as features, and ignores the image pixels. 
+useOnlyEnsInCyborgs = false;  % if true, the ML-cyborg uses only the moth ENs as features, and ignores the image pixels. 
 
-resultsFilename = 'cyborgResults.mat';  % saved by 'runCyborgLearnersOnReducedMnist.m'
+resultsFilename = 'cyborgMnistResults'; % saved by 'runCyborgLearnersOnReducedMnist.m' in current dir.
 
 plotLog = false;
 
@@ -21,10 +22,14 @@ plotLog = false;
 %--------------------------------------------------------------------------------------
 
 %% Extract data:
- 
+disp([ 'loading ' resultsFilename ])  
 load(resultsFilename)  % loads struct = 'results', the results for all the runs done by 'runCyborgLearnersOnReducedMnist.m' 
 
-trList = sort(unique([results.trPerClass])); % the different 'training samples per class' cases found in results
+if isfield(results,'trPerClass')
+    trList = sort(unique([results.trPerClass])); % the different 'training samples per class' cases found in results
+else 
+    trList = [ 1 2 3 5 7 10 15 20 30 40 50  70 100 ];  % 10 may
+end
 
 if normalAL
 	alType =  [results.trivialAL] == 0; 
@@ -104,7 +109,8 @@ for i = 1:length(trList)
     std11(i,2) = std([a.nearNeighAcc]);
     std11(i, 3) = std([a.svmAcc]);
     std11(i, 4) = std([a.neuralNetAcc]);
-    % svm did not run for tr = 1:
+    
+    % svm did not run for tr = 1, so fill in results as for random guessing:
     if min(trList) == 1
         med11(1,3) = 10;
         mu11(1,3) = 10;
@@ -114,6 +120,9 @@ for i = 1:length(trList)
     % measure gains by sample, pixels only to ens plus pixels, ie pure ML to cyborg:
     % 'a' above is ens + pixels
     b = results( ims & ~en & tr & alType );  % pixels only
+    baselineAcc(i,2) = mean( [b.nearNeighAcc] );
+    baselineAcc(i,3) = mean( [b.svmAcc] );
+    baselineAcc(i,4) = mean( [b.neuralNetAcc] );
     meanOfGains(i, 2) = mean( 100*( [a.nearNeighAcc] - [b.nearNeighAcc] )./ [b.nearNeighAcc]  );
     meanOfGains(i, 3) = mean( 100*( [a.svmAcc] - [b.svmAcc] )./ [b.svmAcc] );
     meanOfGains(i, 4) = mean( 100*( [a.neuralNetAcc] - [b.neuralNetAcc] )./ [b.neuralNetAcc] );
@@ -137,8 +146,54 @@ if useOnlyEnsInCyborgs    % case: ignore the image pixels when training cyborgs
 	finalTag = '01';
 end
 
-gainOfMeans = (final - start)./start*100;   % these are gains, comparing means (not the mean of individual gains)
+gainOfMeans = 100*(final - start)./start;   % these are gains, comparing means (not the mean of individual gains) 
+% note that these are N x 4, where N = number of nTr values, and each col
+%     is an ML method: 1 = moth alone (ie a dummy in terms of ML gains), 2 = Nearest, 3 = SVM, 4 = NN.
 
+% calculate the relative reduction in error:
+startErr = 100 - start; 
+rawReductionInErr = final - start; % should be positive in most cases
+relReductionInErr = 100*rawReductionInErr./startErr;
+
+% calculate fisher linear discriminant and p-values:
+fD = ( final - start  ) ./ ( 0.5*stdFinal  + 0.5*stdStart  );
+fD = fD';
+pVals = 100*(1 - erf( fD / sqrt(2) ) );  % As percentage. Also: erf assumes std = sqrt(2), so we must scale
+pVals = min(pVals, 100*ones(size(pVals)));
+
+% print out the mean of the relative gains:
+disp('Mean relative gains due to pretraining NN as %, by numTrain:' )
+disp([ 'trList: ', num2str(trList) ] )
+disp('row 1 = nearest, row 2 = SVM, row 3 = neural net:')
+disp(num2str( ( round( (meanOfGains(:,2:4) )' ,1 ) ) ) )
+
+
+% print out relative gain, comparing mean of all runs, 
+% ie how much bigger is the mean of the 13 cyborg runs relative to the mean of the 13 baseline runs:
+disp('Gain in mean accuracies due to pretraining NN as %, by numTrain:' )
+disp('ie how much bigger is the mean of the cyborg runs relative to the mean of the baseline runs:')
+disp( [ 'trList: ', num2str(trList) ] )
+disp('row 1 = nearest, row 2 = SVM, row 3 = neural net:')
+disp(num2str( ( round( (gainOfMeans(:,2:4) )' ,1 ) ) ) )
+
+% print significance of gain as fisher discrim and as p-values:
+disp('fisher discriminants: ' )
+disp('row 1 = nearest, row 2 = SVM, row 3 = neural net')
+disp( [ 'trList: ', num2str(trList) ] )
+disp( num2str(round( fD(2:4, : ) , 1) ) )
+disp('p-values:')
+disp('row 1 = nearest, row 2 = SVM, row 3 = neural net')
+disp(num2str(trList))
+disp(num2str(round( pVals(2:4, : ), 0 )))
+
+% print out relative reduction in error, comparing mean of all runs, 
+% ie how much smaller is the mean error of the 13 cyborg runs relative to the mean error of the 13 baseline runs:
+disp('Gain in mean accuracies due to pretraining NN as %, by numTrain:' )
+disp('ie how much bigger is the mean of the cyborg runs relative to the mean of the baseline runs:')
+disp( [ 'trList: ', num2str(trList) ] )
+disp('row 1 = nearest, row 2 = SVM, row 3 = neural net:')
+disp(num2str( ( round( (relReductionInErr(:,2:4) )' ,1 ) ) ) )
+%--------------------------------------------------------------------- 
 %--------------------------------------------------------------------- 
    
 %% Make plots 
@@ -198,7 +253,7 @@ figure
     ylabel('gain / std dev')
     legend( 'svm',  'nearest','neuralNet')
     legend('Location','southeast')
-    title( [ 'Significance: gain in accuracy, scaled by std dev' ]  ) 
+    title( [ 'Significance: gain in accuracy, scaled by fisher discriminant' ]  ) 
     grid on
     xlim([0, max(trList) + 5 ] )
     
@@ -221,29 +276,54 @@ figure
     end
     xlabel('# training samples per class')
     ylabel('Std dev of Accuracy, Percentage points')
-    legend('moth', 'svm',  'nearest','neuralNet')
+    legend( 'moth', 'svm',  'nearest','neuralNet')
     title( [ 'Std dev (in percentage points) of accuracy for baseline methods' ] ) 
     grid on
     xlim([0, max(trList) + 5 ] )
     ylim([0, 100])
     
+ 
 %-----------------------------------------------------------------------
     
-% 4. Gains as percentages (bar plots):
-
-% Note: colors do not match other plots    
+%% 4. Gains as percentages vs baseline model accuracy (scatterplot):
+    
 figure
-    b = bar(trList , (gainOfMeans(:,order) )); 
-    grid on
-    xlabel('# training samples per class')
-    ylabel('% gain in accuracy')
-    legend(  'svm', 'nearest', 'neuralNet')
-    legend('Location','southeast')
-    title('Percent gain in accuracy, cyborgs vs ML baseline')
-    xlim([0, max(trList) + 5 ] )
-
+    hold on
+    order = [3 2 4];
+    for i = order 
+        plot(baselineAcc(:, i) , (gainOfMeans(:, i) ),   [colors{i} '.'], 'markersize', 24); 
+        grid on
+        xlabel('Baseline model accuracy (%)')
+        ylabel('% gain in accuracy')
+        legend(  'svm', 'nearest', 'neuralNet')
+        legend('Location','northeast')
+        title('Percent gain in accuracy, cyborgs vs ML baseline')
+        xlim([0, 100 ] )       
+        ylim([0, 100 ] )
+    end
+    
 %-----------------------------------------------------------------------------------
+    
+%% 5. Relative reduction in error as percentages vs baseline model error (scatterplot):
 
+err = 100 - baselineAcc;
+     
+figure
+    hold on
+    order = [3 2 4];
+    for i = order 
+        plot(baselineAcc(:, i) , (relReductionInErr(:, i) ),   [colors{i} '.'], 'markersize', 24); 
+        grid on
+        xlabel('Baseline model accuracy (%)')
+        ylabel('% gain in accuracy')
+        legend(  'svm', 'nearest', 'neuralNet')
+        legend('Location','northeast')
+        title('Percent reduction in error, cyborgs vs ML baseline')
+        xlim([0, 100 ] )        
+        ylim([0, 100 ] )
+    end
+    
+%-----------------------------------------------------------------------------------
 % MIT license:
 % Permission is hereby granted, free of charge, to any person obtaining a copy of this software and 
 % associated documentation files (the "Software"), to deal in the Software without restriction, including 

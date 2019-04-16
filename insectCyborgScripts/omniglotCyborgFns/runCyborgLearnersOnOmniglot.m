@@ -1,5 +1,5 @@
 % Apply ML methods to either ENs only, or to pixels and ENs:
-% Uses the output of moths trained in 'runMothLearnerOnReducedMnistForUseAmCyborg.m'
+% Uses the output of moths trained in 'runMothLearnerOnROmniglotForUseAsCyborg.m'
 % For each moth, this script:
 % 1. Trains and tests various ML methods (NN, SVM, Nearest Neighbor) on the training and
 %     val sets used for that moth (standard ML, as baseline)
@@ -9,7 +9,7 @@
 %     readouts as features during both training and testing.
 
 % Dependencies: Matlab, Statistics and machine learning toolbox, Signal processing toolbox
-% Copyright (c) 2018 Charles B. Delahunt
+% Copyright (c) 2019 Charles B. Delahunt
 % MIT License
 
 close all
@@ -19,8 +19,10 @@ counter = 0;
 
 %% USER ENTRIES:
 
-parentFolder = 'mothsForCyborg';   % folder containing files saved by 'runMothLearnerOnReducedMnistForUseAsCyborg.m'. 
-resultsFilename = 'cyborgResults';  % results for all cyborgs will be saved in one .mat file
+numFeatures = 120; % NOTE! This must agree with 'numFeatures' in 'runMothLearnerOnOmniglotForUseInCyborg.m'
+parentFolder = 'mothsForOmniglotCyborg';   % folder containing files saved by 'runMothLearnerOnOmniglotForUseInCyborg.m' 
+resultsFilename = 'cyborgOmniglotResults';  % results for all cyborgs will be saved in one .mat file. It is saved into the current dir.
+%                                                                      It must match the value in 'plotCyborgOmniglotResults.m'
 
 % END OF USER ENTRIES
 
@@ -92,6 +94,7 @@ for ind = 1:length(files)
     % inds of train and val images:
     load( fullfile( parentFolder, name) )  % loads r
     odorClass = r(1).odorClass;
+    % selectedClassInds = r(1).selectedClassInds;
     rerunTrainInds = find(r(1).rerunTrainingOdorResp > -1 );
     valInds = find(r(1).postTrainOdorResp > - 1 );
     valPerClass = length(valInds) / nC;
@@ -370,7 +373,7 @@ for ind = 1:length(files)
         ', ', num2str(cyborg95NNAcc),  '. Relative gain =  ', num2str(round(100*(cyborg95NNAcc - baselineNNAcc)/ baselineNNAcc )),'%'] ) 
     
 end % for ind (of file)
-save(resultsFilename, 'results')
+save(resultsFilename, 'results')  % this results file is saved in the current dir
 
 % MIT license:
 % Permission is hereby granted, free of charge, to any person obtaining a copy of this software and 
